@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"hack/datafunc"
 	"net/http"
 )
 
 func main() {
+	datafunc.Data()
 	// 정적 파일 서빙
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 
