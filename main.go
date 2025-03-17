@@ -14,6 +14,7 @@ func main() {
 
 	// 라우트 설정
 	http.HandleFunc("/", service.HandleLogin)
+	http.HandleFunc("/login", service.HandleLoginPost)
 	http.HandleFunc("/dashboard", service.HandleDashboard)
 
 	// 서버 시작
