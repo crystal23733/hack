@@ -8,6 +8,11 @@ import (
 
 var db *sql.DB
 
+// 데이터베이스 연결 설정
+func SetDB(database *sql.DB) {
+	db = database
+}
+
 type Login interface {
 	HandleLogin(w http.ResponseWriter, r *http.Request)
 	HandleDashboard(w http.ResponseWriter, r *http.Request)

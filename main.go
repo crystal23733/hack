@@ -9,6 +9,9 @@ import (
 
 func main() {
 	datafunc.Data()
+
+	service.SetDB(datafunc.DB)
+
 	// 정적 파일 서빙
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 
