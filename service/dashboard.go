@@ -1,6 +1,10 @@
 package service
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+	"strconv"
+)
 
 type Dashboard interface {
 	HandleDashboard(w http.ResponseWriter, r *http.Request)
@@ -34,4 +38,32 @@ func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.ServeFile(w, r, "./static/dashboard.html")
+}
+
+func HandleCreate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusUnauthorized)
+		return
+	}
+
+	cookie, err := r.Cookie("user_id")
+	if err != nil {
+		http.Error(w, "로그인이 필요합니다", http.StatusUnauthorized)
+		return
+	}
+
+	userId, _ := strconv.Atoi(cookie.Value)
+	title := r.FormValue("title")
+	content := r.FormValue("content")
+
+	// 취약한 SQL 쿼리 - 인젝션 가능
+	query := fmt.Sprintf("INSERT INTO posts (user_id, title, content) VALUES (%d, '%s', '%s')", userId, title, content)
+
+	_, err = db.Exec(query)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusSeeOther)
+		return
+	}
+
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
