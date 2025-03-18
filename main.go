@@ -20,7 +20,7 @@ func main() {
 	http.HandleFunc("/login", service.HandleLoginPost)
 	http.HandleFunc("/dashboard", service.HandleDashboard)
 	http.HandleFunc("/post/create", service.HandleCreate)
-
+	http.HandleFunc("/post", service.HandlePost)
 	// 서버 시작
 	fmt.Println("서버가 시작되었습니다. http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

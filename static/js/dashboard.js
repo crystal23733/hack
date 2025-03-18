@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+    loadPosts();
     const postForm = document.getElementById("post-form");
     postForm.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -36,3 +37,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     })
 })
+
+const loadPosts = () => {
+    fetch("/post")
+    .then(response => response.text())
+    .then(html => {
+        document.getElementById("posts-container").innerHTML = html;
+    })
+    .catch(error => {
+        console.error("게시물을 가져오는 중 오류 발생:", error);
+    })
+}

@@ -9,6 +9,7 @@ import (
 type Dashboard interface {
 	HandleDashboard(w http.ResponseWriter, r *http.Request)
 	HandleCreate(w http.ResponseWriter, r *http.Request)
+	HandlePost(w http.ResponseWriter, r *http.Request)
 }
 
 func HandleDashboard(w http.ResponseWriter, r *http.Request) {
@@ -66,4 +67,50 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+}
+
+func HandlePost(w http.ResponseWriter, r *http.Request) {
+	rows, err := db.Query("SELECT id, title, content, created_at FROM posts ORDER BY created_at DESC")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	defer rows.Close()
+
+	var posts []map[string]interface{}
+	for rows.Next() {
+		var id int
+		var title, content string
+		var createdAt string
+		if err := rows.Scan(&id, &title, &content, &createdAt); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		post := map[string]interface{}{
+			"id":         id,
+			"title":      title,
+			"content":    content,
+			"created_at": createdAt,
+		}
+		posts = append(posts, post)
+	}
+
+	// HTML 직접 생성 (XSS 취약)
+	w.Header().Set("Content-Type", "text/html")
+	for _, post := range posts {
+		// 이스케이프 X
+		fmt.Fprintf(w, `
+        <div class="post" data-id="%d">
+            <h3>%s</h3>
+            <p>%s</p>
+            <small>작성일: %s</small>
+            <div>
+                <button onclick="editPost(%d)">수정</button>
+                <button onclick="deletePost(%d)">삭제</button>
+            </div>
+        </div>
+        `, post["id"], post["title"], post["content"], post["created_at"], post["id"], post["id"])
+	}
 }
