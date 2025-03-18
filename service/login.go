@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 var db *sql.DB
@@ -16,6 +17,7 @@ func SetDB(database *sql.DB) {
 type Login interface {
 	HandleLogin(w http.ResponseWriter, r *http.Request)
 	HandleLoginPost(w http.ResponseWriter, r *http.Request)
+	HandleLogout(w http.ResponseWriter, r *http.Request)
 }
 
 func HandleLogin(w http.ResponseWriter, r *http.Request) {
@@ -44,4 +46,18 @@ func HandleLoginPost(w http.ResponseWriter, r *http.Request) {
 	})
 
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+}
+
+// 로그아웃 처리 함수
+func HandleLogout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "user_id",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+		HttpOnly: true,
+	})
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
