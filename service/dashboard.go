@@ -10,6 +10,7 @@ type Dashboard interface {
 	HandleDashboard(w http.ResponseWriter, r *http.Request)
 	HandleCreate(w http.ResponseWriter, r *http.Request)
 	HandlePost(w http.ResponseWriter, r *http.Request)
+	HandleUpdate(w http.ResponseWriter, r *http.Request)
 }
 
 func HandleDashboard(w http.ResponseWriter, r *http.Request) {

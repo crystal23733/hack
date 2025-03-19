@@ -2,6 +2,10 @@ document.addEventListener("DOMContentLoaded", () => {
     checkLoginStatus();
     loadPosts();
     logout();
+    createPost();
+})
+
+const createPost = () => {
     const postForm = document.getElementById("post-form");
     postForm.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -16,10 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const formData = new FormData();
         formData.append("title", title);
-        formData.appent("content", content);
+        formData.append("content", content);
 
         // 게시글 생성 요청
-        fetch("/dashboard/create", {
+        fetch("/post/create", {
             method: "POST",
             body: formData,
         })
@@ -38,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("게시글 생성 오류가 발생했습니다. 다시 시도해주세요.");
         });
     })
-})
+}
 
 const loadPosts = () => {
     fetch("/post")
