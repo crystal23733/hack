@@ -13,6 +13,7 @@ type Dashboard interface {
 	HandlePost(w http.ResponseWriter, r *http.Request)
 	HandleEditPost(w http.ResponseWriter, r *http.Request)
 	HandleUpdatePost(w http.ResponseWriter, r *http.Request)
+	HandleDeletePost(w http.ResponseWriter, r *http.Request)
 }
 
 func HandleDashboard(w http.ResponseWriter, r *http.Request) {
@@ -167,6 +168,20 @@ func HandleUpdatePost(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 
 	query := fmt.Sprintf("UPDATE posts SET title = '%s', content = '%s' WHERE id = %s", title, content, postID)
+
+	_, err := db.Exec(query)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+}
+
+func HandleDeletePost(w http.ResponseWriter, r *http.Request) {
+	postID := r.URL.Query().Get("id")
+
+	query := "DELETE FROM posts WHERE id = " + postID
 
 	_, err := db.Exec(query)
 	if err != nil {

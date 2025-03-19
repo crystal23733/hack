@@ -24,7 +24,7 @@ func main() {
 	http.HandleFunc("/post", service.HandlePost)
 	http.HandleFunc("/post/edit", service.HandleEditPost)
 	http.HandleFunc("/post/update", service.HandleUpdatePost)
-
+	http.HandleFunc("/post/delete", service.HandleDeletePost)
 	// 서버 시작
 	fmt.Println("서버가 시작되었습니다. http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
