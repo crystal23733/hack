@@ -79,6 +79,25 @@ const editPost = (id) => {
     window.location.href = `/post/edit?id=${id}`;
 }
 
+const deletePost = (id) => {
+    if (confirm("정말로 이 게시물을 삭제하시겠습니까?")) {
+        fetch(`/post/delete?id=${id}`, {
+            method:"POST",
+            credentials:"same-origin",
+        })
+        .then(response => {
+            if (response.ok) {
+                loadPosts();
+            } else {
+                alert("게시물 삭제중 오류가 발생하였습니다.");
+            }
+        })
+        .catch(error => {
+            console.error("게시물 삭제 중 오류 발생:", error)
+        })
+    }
+}
+
 const logout = () => {
     const logoutLink = document.querySelector('.logout');
     
