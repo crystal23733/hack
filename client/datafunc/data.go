@@ -3,7 +3,6 @@ package datafunc
 import (
 	"database/sql"
 	"fmt"
-	"hack/client/config"
 	"log"
 
 	_ "github.com/lib/pq"
@@ -12,31 +11,37 @@ import (
 var DB *sql.DB
 
 func Data() {
-	// 환경변수 로드
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		log.Fatal("환경변수 로드 실패", err)
-	}
-
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		cfg.DB_HOST,
-		cfg.DB_PORT,
-		cfg.DB_USER,
-		cfg.DB_PASSWORD,
-		cfg.DB_NAME,
+	const (
+		host     = "localhost"
+		port     = "5432"
+		user     = "postgres"
+		password = "password123"
+		dbname   = "vulnerable_app"
 	)
 
+	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		host,
+		port,
+		user,
+		password,
+		dbname,
+	)
+
+	var err error
 	DB, err = sql.Open("postgres", connStr)
 	if err != nil {
-		log.Fatal("데이터베이스 연결 실패", err)
+		log.Printf("데이터베이스 연결 실패: %v", err)
+		log.Println("로컬 환경에서 실행 중인지 확인하세요.")
+		return
 	}
 
 	// 데이터베이스 연결 확인
 	err = DB.Ping()
 	if err != nil {
-		log.Fatal("데이터베이스 연결 확인 실패", err)
+		log.Printf("데이터베이스 연결 확인 실패: %v", err)
+		log.Println("PostgreSQL이 실행 중인지 확인하세요.")
+		return
 	}
 
 	log.Println("데이터베이스 연결 성공")
-
 }
