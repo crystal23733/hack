@@ -23,6 +23,8 @@ FROM alpine:latest
 # 작업 디렉토리 설정
 WORKDIR /app
 
+ENV DOCKER_ENV=true
+
 # 빌드 스테이지에서 빌드된 바이너리 복사
 COPY --from=builder /app/main .
 # static 폴더 복사 (HTML, CSS, JavaScript 파일들)

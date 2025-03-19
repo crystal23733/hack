@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
 	_ "github.com/lib/pq"
 )
@@ -11,8 +12,13 @@ import (
 var DB *sql.DB
 
 func Data() {
+	// Docker 환경인지 확인하여 호스트 설정
+	host := "localhost"
+	if os.Getenv("DOCKER_ENV") == "true" {
+		host = "db"
+	}
+
 	const (
-		host     = "localhost"
 		port     = "5432"
 		user     = "postgres"
 		password = "password123"
