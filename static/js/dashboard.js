@@ -75,6 +75,10 @@ const checkLoginStatus = () => {
     return true;
 }
 
+const editPost = (id) => {
+    window.location.href = `/post/edit?id=${id}`;
+}
+
 const logout = () => {
     const logoutLink = document.querySelector('.logout');
     
