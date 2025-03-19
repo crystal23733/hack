@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"hack/datafunc"
-	"hack/service"
+	"hack/client/datafunc"
+	"hack/client/service"
 	"net/http"
 )
 

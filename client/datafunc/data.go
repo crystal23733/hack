@@ -3,7 +3,7 @@ package datafunc
 import (
 	"database/sql"
 	"fmt"
-	"hack/config"
+	"hack/client/config"
 	"log"
 
 	_ "github.com/lib/pq"

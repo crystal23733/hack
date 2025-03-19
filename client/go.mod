@@ -1,4 +1,4 @@
-module hack
+module hack/client
 
 go 1.23.2
 
