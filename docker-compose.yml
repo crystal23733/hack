@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 데이터베이스
+  db:
+    build: 
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: vulnerable-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  # Go 애플리케이션
+  app:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: vulnerable-app
+    depends_on:
+      - db
+    environment:
+      - DOCKER_ENV=true
+    ports:
+      - "8080:8080"
+    networks:
+      - app_network
+
+  # Nginx 리버스 프록시
+  nginx:
+    build: 
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: vulnerable-nginx
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+    networks:
+      - app_network
+
+# 볼륨 정의
+volumes:
+  postgres_data:
+    driver: local
+
+# 네트워크 정의
+networks:
+  app_network:
+    driver: bridge
