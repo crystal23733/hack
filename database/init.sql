@@ -1,3 +1,6 @@
+-- 기존 데이터베이스가 있다면 삭제
+DROP DATABASE IF EXISTS vulnerable_app;
+
 -- 데이터베이스 생성
 CREATE DATABASE vulnerable_app;
 
