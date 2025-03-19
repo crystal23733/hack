@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 )
@@ -10,7 +11,8 @@ type Dashboard interface {
 	HandleDashboard(w http.ResponseWriter, r *http.Request)
 	HandleCreate(w http.ResponseWriter, r *http.Request)
 	HandlePost(w http.ResponseWriter, r *http.Request)
-	HandleUpdate(w http.ResponseWriter, r *http.Request)
+	HandleEditPost(w http.ResponseWriter, r *http.Request)
+	HandleUpdatePost(w http.ResponseWriter, r *http.Request)
 }
 
 func HandleDashboard(w http.ResponseWriter, r *http.Request) {
@@ -114,4 +116,63 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
         </div>
         `, post["id"], post["title"], post["content"], post["created_at"], post["id"], post["id"])
 	}
+}
+
+func HandleEditPost(w http.ResponseWriter, r *http.Request) {
+	postID := r.URL.Query().Get("id")
+
+	query := "SELECT title, content FROM posts WHERE id = " + postID
+
+	var title, content string
+	err := db.QueryRow(query).Scan(&title, &content)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	tmpl := template.New("edit")
+	tmpl, _ = tmpl.Parse(`
+	<form id="edit-form" method="POST" action="/post/update?id={{ .ID }}">
+		<input type="hidden" name="id" value="{{.ID}}">
+		<div>
+			<label for="title">제목:</label>
+			<input type="text" id="title" name="title" value="{{.Title}}">
+		</div>
+		<div>
+			<label for="content">내용:</label>
+			<textarea id="content" name="content">{{.Content}}</textarea>
+		</div>
+		<button type="submit">수정</button>
+		<button type="button" onclick="window.location='/dashboard'">취소</button>
+	</form>
+	`)
+
+	tmpl.Execute(w, map[string]interface{}{
+		"ID":      template.HTML(postID),
+		"Title":   template.HTML(title),
+		"Content": template.HTML(content),
+	})
+}
+
+func HandleUpdatePost(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	postID := r.FormValue("id")
+	title := r.FormValue("title")
+	content := r.FormValue("content")
+
+	query := fmt.Sprintf("UPDATE posts SET title = '%s', content = '%s' WHERE id = %s", title, content, postID)
+
+	_, err := db.Exec(query)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
