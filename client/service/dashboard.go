@@ -11,6 +11,7 @@ type Dashboard interface {
 	HandleDashboard(w http.ResponseWriter, r *http.Request)
 	HandleCreate(w http.ResponseWriter, r *http.Request)
 	HandlePost(w http.ResponseWriter, r *http.Request)
+	HandlePostDetail(w http.ResponseWriter, r *http.Request)
 	HandleEditPost(w http.ResponseWriter, r *http.Request)
 	HandleUpdatePost(w http.ResponseWriter, r *http.Request)
 	HandleDeletePost(w http.ResponseWriter, r *http.Request)
@@ -74,49 +75,68 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandlePost(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, content, created_at FROM posts ORDER BY created_at DESC")
+	rows, err := db.Query("SELECT id, title, created_at FROM posts ORDER BY created_at DESC")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	defer rows.Close()
 
-	var posts []map[string]interface{}
+	w.Header().Set("Content-Type", "text/html")
+
 	for rows.Next() {
 		var id int
-		var title, content string
-		var createdAt string
-		if err := rows.Scan(&id, &title, &content, &createdAt); err != nil {
+		var title, createdAt string
+		if err := rows.Scan(&id, &title, &createdAt); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		post := map[string]interface{}{
-			"id":         id,
-			"title":      title,
-			"content":    content,
-			"created_at": createdAt,
-		}
-		posts = append(posts, post)
-	}
-
-	// HTML 직접 생성 (XSS 취약)
-	w.Header().Set("Content-Type", "text/html")
-	for _, post := range posts {
-		// 이스케이프 X
 		fmt.Fprintf(w, `
-        <div class="post" data-id="%d">
-            <h3>%s</h3>
-            <p>%s</p>
+		<div class="post" data-id="%d">
+            <a href="/post/detail?id=%d" class="post-title">%s</a>
             <small>작성일: %s</small>
-            <div>
+            <div class="post-actions">
                 <button onclick="editPost(%d)">수정</button>
                 <button onclick="deletePost(%d)">삭제</button>
             </div>
         </div>
-        `, post["id"], post["title"], post["content"], post["created_at"], post["id"], post["id"])
+		`, id, id, title, createdAt, id, id)
 	}
+}
+
+func HandlePostDetail(w http.ResponseWriter, r *http.Request) {
+	postID := r.URL.Query().Get("id")
+
+	query := "SELECT id, title, content, created_at FROM posts WHERE id = " + postID
+
+	var title, content, createdAt string
+	err := db.QueryRow(query).Scan(&title, &content, &createdAt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	fmt.Fprintf(w, `
+	<!DOCTYPE html>
+    <html>
+    <head>
+        <title>게시글 상세</title>
+        <link rel="stylesheet" href="/static/style/dashboard.css">
+    </head>
+    <body>
+        <div class="container">
+            <a href="/dashboard" class="back-btn">목록으로</a>
+            <div class="post-detail">
+                <h2>%s</h2>
+                <div class="content">%s</div>
+                <small>작성일: %s</small>
+            </div>
+        </div>
+    </body>
+    </html>
+	`, title, content, createdAt)
 }
 
 func HandleEditPost(w http.ResponseWriter, r *http.Request) {
